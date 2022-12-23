@@ -13,7 +13,7 @@ def load_tweet(keyword, limit):
   c.Output = result_loc
   c.Store_csv = True
   #por numero de likes
-  c.Min_likes = 50
+  c.Min_likes = 20
   #por numero de retweets
   c.Min_retweets = 20
 
