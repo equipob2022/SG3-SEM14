@@ -4,23 +4,21 @@ import twint
 import os
 
 def load_tweet(keyword, limit):
-  result_loc = 'tweets.csv'
   c = twint.Config()
   c.Search = keyword
   c.Limit = limit
   c.Lang = 'en'
-  c.Custom["tweet"] = ['date','tweet','username']
-  c.Output = result_loc
   c.Store_csv = True
   #por numero de likes
   c.Min_likes = 20
   #por numero de retweets
   c.Min_retweets = 20
+  #guardar los tweets en un dataframe
+  #twets populares
+  c.Popular_tweets = True
+  c.Pandas = True
 
   asyncio.set_event_loop(asyncio.new_event_loop())
   twint.run.Search(c)
-
-  df = pd.read_csv(result_loc)
-  os.remove(result_loc)
-
+  df = twint.storage.panda.Tweets_df
   return df
