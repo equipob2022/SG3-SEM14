@@ -11,10 +11,12 @@ from sklearn.feature_extraction.text import CountVectorizer
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
+import asyncio
 #usar textblob para analizar el sentimiento de cada tweet
 from textblob import TextBlob
 
 def app():
+    asyncio.set_event_loop(asyncio.new_event_loop())
     palabra = st.text_input('Ingrese el topic a analizar', 'Nintendo')
     st.subheader('Análisis de sentimiento de '+palabra)
     #establecer el numero de tweets a buscar
@@ -33,10 +35,12 @@ def app():
     #crear un dataframe vacio
     df_tweets = pd.DataFrame()
     with st.spinner('Extrayendo tweets 🐥🐥🐥, espere por favor...'):
+        #buscar los tweets
         twint.run.Search(config)
-        df = twint.storage.panda.Tweets_df
+        #guardar los tweets en un dataframe
+        df_tweets = twint.storage.panda.Tweets_df
         #seleccionar las columnas que nos interesan y ponerlas en un nuevo dataframe
-        df_tweets = df[['date', 'tweet', 'nlikes','nretweets']]
+
         #poner un mensaje mientras se cargan los tweets con emojis
         #escribir en streamlit
         #hacemos una funcion para limpiar los tweets
@@ -65,6 +69,8 @@ def app():
             return re.sub(r'[^\x00-\x7f]',r'', text)
         #aplicamos la funcion a la columna de tweets
         df_tweets['clean_tweet'] = pd.DataFrame(df_tweets.clean_tweet.apply(remove_non_ascii_1))
+        #selccionar las columnas que nos interesan y ponerlas en un nuevo dataframe
+        df_tweets = df_tweets[['date', 'username', 'tweet', 'clean_tweet']]
         st.subheader('Tweets extraidos')
         st.write(df_tweets)
         #guardar los tweets en un csv
