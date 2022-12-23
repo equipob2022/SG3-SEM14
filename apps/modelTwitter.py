@@ -119,5 +119,5 @@ def app():
         #mostrar el dataframe con los tweets y sus sentimientos
         st.subheader('Tweets con sentimiento')
         #selecciona las columnas que nos interesan
-        st.write(df_tweets[['tweet_clean', 'sentiment', 'subjectivity']])
+        st.write(df_tweets[['tweet', 'sentiment', 'subjectivity']])
 
