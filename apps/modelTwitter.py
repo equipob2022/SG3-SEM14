@@ -12,8 +12,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 import asyncio
+import sys
 #usar textblob para analizar el sentimiento de cada tweet
 from textblob import TextBlob
+from config import load_tweet
+sys.path.append('../')
 
 def app():
     asyncio.set_event_loop(asyncio.new_event_loop())
@@ -21,60 +24,46 @@ def app():
     st.subheader('Análisis de sentimiento de '+palabra)
     #establecer el numero de tweets a buscar
     num = st.number_input('Ingrese el numero de tweets a buscar', 1, 5000, 10)
-    #recibir por form de google colab la palabra a buscar
-    config = twint.Config()
-    config.Search = palabra
-    config.Limit = num
-    config.Lang = "en"
-    config.Pandas = True
-    config.Popular_tweets = True
-    #por numero de likes
-    config.Min_likes = 30
-    #por numero de retweets
-    config.Min_retweets = 20
     #crear un dataframe vacio
     df_tweets = pd.DataFrame()
     with st.spinner('Extrayendo tweets 🐥🐥🐥, espere por favor...'):
         #buscar los tweets
-        twint.run.Search(config)
-        #guardar los tweets en un dataframe
-        df_tweets = twint.storage.panda.Tweets_df
-        #seleccionar las columnas que nos interesan y ponerlas en un nuevo dataframe
+        df_tweets = load_tweet(palabra, num)
 
-        #poner un mensaje mientras se cargan los tweets con emojis
-        #escribir en streamlit
-        #hacemos una funcion para limpiar los tweets
-        def clean_text_round1(text):
-            '''Poner el texto en minúsculas, elimine el texto entre corchetes, elimine la puntuación y elimine las palabras que contienen números.'''
-            text = text.lower()
-            text = re.sub('\[.*?\]', '', text)
-            text = re.sub('[%s]' % re.escape(string.punctuation), '', text)
-            text = re.sub('\w*\d\w*', '', text)
-            return text
-        # creamos una nueva columna para los tweets limpios
-        round1 = lambda x: clean_text_round1(x)
-        df_tweets['clean_tweet'] = df_tweets['tweet'].apply(round1)
-        # Ahora aplicaremos la siguiente técnica: Eliminar algunas puntuaciones, textos o palabras que no tengan sentido
-        def clean_text_round2(text):
-            '''Suprimir algunos signos de puntuación adicionales y texto sin sentido.'''
-            text = re.sub('[‘’“”…]', '', text)
-            text = re.sub('\n', '', text)
-            return text
+    #poner un mensaje mientras se cargan los tweets con emojis
+    #escribir en streamlit
+    #hacemos una funcion para limpiar los tweets
+    def clean_text_round1(text):
+        '''Poner el texto en minúsculas, elimine el texto entre corchetes, elimine la puntuación y elimine las palabras que contienen números.'''
+        text = text.lower()
+        text = re.sub('\[.*?\]', '', text)
+        text = re.sub('[%s]' % re.escape(string.punctuation), '', text)
+        text = re.sub('\w*\d\w*', '', text)
+        return text
+    # creamos una nueva columna para los tweets limpios
+    round1 = lambda x: clean_text_round1(x)
+    df_tweets['clean_tweet'] = df_tweets['tweet'].apply(round1)
+    # Ahora aplicaremos la siguiente técnica: Eliminar algunas puntuaciones, textos o palabras que no tengan sentido
+    def clean_text_round2(text):
+        '''Suprimir algunos signos de puntuación adicionales y texto sin sentido.'''
+        text = re.sub('[‘’“”…]', '', text)
+        text = re.sub('\n', '', text)
+        return text
 
-        round2 = lambda x: clean_text_round2(x)
-        df_tweets['clean_tweet'] = df_tweets['clean_tweet'].apply(round2)
-        #funcion para eliminar todos los caracteres que no sean letras en ingles
-        def remove_non_ascii_1(text):
-            '''Remove non-ASCII characters from list of tokenized words'''
-            return re.sub(r'[^\x00-\x7f]',r'', text)
-        #aplicamos la funcion a la columna de tweets
-        df_tweets['clean_tweet'] = pd.DataFrame(df_tweets.clean_tweet.apply(remove_non_ascii_1))
-        #selccionar las columnas que nos interesan y ponerlas en un nuevo dataframe
-        df_tweets = df_tweets[['date', 'username', 'tweet', 'clean_tweet']]
-        st.subheader('Tweets extraidos')
-        st.write(df_tweets)
-        #guardar los tweets en un csv
-        df_tweets.to_csv('tweets.csv', index=False)
+    round2 = lambda x: clean_text_round2(x)
+    df_tweets['clean_tweet'] = df_tweets['clean_tweet'].apply(round2)
+    #funcion para eliminar todos los caracteres que no sean letras en ingles
+    def remove_non_ascii_1(text):
+        '''Remove non-ASCII characters from list of tokenized words'''
+        return re.sub(r'[^\x00-\x7f]',r'', text)
+    #aplicamos la funcion a la columna de tweets
+    df_tweets['clean_tweet'] = pd.DataFrame(df_tweets.clean_tweet.apply(remove_non_ascii_1))
+    #las filas que no tienen tweets se eliminan
+    df_tweets = df_tweets[df_tweets['clean_tweet'] != '']
+    st.subheader('Tweets extraidos')
+    st.write(df_tweets)
+    #guardar los tweets en un csv
+    df_tweets.to_csv('tweets.csv', index=False)
 
     #leer el csv de los tweets
     df_clean = pd.read_csv('tweets.csv')
