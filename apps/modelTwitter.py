@@ -24,7 +24,7 @@ sys.path.append('../')
 
 def app():
     asyncio.set_event_loop(asyncio.new_event_loop())
-    palabra = st.text_input('Ingrese el topic a analizar', 'Pedro Castillo')
+    palabra = st.text_input('Ingrese el topic a analizar', 'Twitter')
     st.subheader('Análisis de sentimiento de '+palabra)
     #establecer el numero de tweets a buscar
     num = st.number_input('Ingrese el numero de tweets a buscar', 1, 5000, 100)
