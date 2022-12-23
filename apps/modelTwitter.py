@@ -28,9 +28,9 @@ def app():
     df_tweets = pd.DataFrame()
     with st.spinner('Extrayendo tweets 🐥🐥🐥, espere por favor...'):
         #buscar los tweets
-        df_tweets = load_tweet(palabra, num)
-
-    #poner un mensaje mientras se cargan los tweets con emojis
+        df = load_tweet(palabra, num)
+    # seleccionar solo las columnas que necesitamos
+    df_tweets = df[['date', 'tweet', 'username', 'nlikes', 'nreplies', 'nretweets']]
     #escribir en streamlit
     #hacemos una funcion para limpiar los tweets
     def clean_text_round1(text):
@@ -119,5 +119,5 @@ def app():
         #mostrar el dataframe con los tweets y sus sentimientos
         st.subheader('Tweets con sentimiento')
         #selecciona las columnas que nos interesan
-        st.write(df_tweets[['tweet', 'sentiment', 'subjectivity']])
+        st.write(df_tweets[['tweet_clean', 'sentiment', 'subjectivity']])
 
