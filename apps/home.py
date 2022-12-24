@@ -1,7 +1,7 @@
 import streamlit as st
 
 def app():
-    st.subheader('Analisis de sentimiento Elon Musk')
+    st.subheader('Analisis de sentimiento en Twitter')
 
     st.subheader('Integrantes: ')
 
